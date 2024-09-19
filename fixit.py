@@ -130,7 +130,7 @@ def search_youtube(query, progress_bar, progress_text):
                         thumbnail_element = video.find_element(By.CSS_SELECTOR, 'ytd-thumbnail img')
                         thumbnail_url = thumbnail_element.get_attribute('src')
                     except Exception as e:
-                        log_message(f"Thumbnail not found at alternative path for video {title}: {e}", level='error')
+                        log_message(f"Thumbnail not found at alternative path for video {title}: {e}", level='debug')
 
                 if url and title:
                     videos.append({
