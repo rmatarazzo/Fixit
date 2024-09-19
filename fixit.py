@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
 import streamlit as st
 import pandas as pd
+import time
 
 def get_current_timestamp():
     """Returns the current timestamp in a string format suitable for filenames."""
@@ -81,9 +82,19 @@ def search_youtube(query, progress_bar, progress_text):
 
         # Wait for the video results to load
         wait = WebDriverWait(driver, 20)
-        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'ytd-video-renderer')))
+        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, 'ytd-video-renderer')))
         progress_bar.progress(50)
         progress_text.text("Fetching video titles, URLs, descriptions, thumbnails, and durations...")
+
+        # Scroll to the bottom of the page to load more videos
+        last_height = driver.execute_script("return document.documentElement.scrollHeight")
+        while True:
+            driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);")
+            time.sleep(7)  # Wait for the page to load
+            new_height = driver.execute_script("return document.documentElement.scrollHeight")
+            if new_height == last_height:
+                break
+            last_height = new_height
 
         # Collect videos
         videos = []
@@ -118,8 +129,7 @@ def search_youtube(query, progress_bar, progress_text):
                 thumbnail_url = None  # Initialize as None
                 try:
                     # First try the direct img element within the video element
-                    #thumbnail_element = video.find_element(By.CSS_SELECTOR, 'img')
-                    thumbnail_element = driver.find_element(By.ID, "thumbnail")
+                    thumbnail_element = video.find_element(By.CSS_SELECTOR, 'img.yt-core-image')
                     thumbnail_url = thumbnail_element.get_attribute('src')
                 except Exception as e:
                     log_message(f"Thumbnail not found at main path for video {title}: {e}", level='debug')
@@ -132,7 +142,7 @@ def search_youtube(query, progress_bar, progress_text):
                     except Exception as e:
                         log_message(f"Thumbnail not found at alternative path for video {title}: {e}", level='debug')
 
-                if url and title:
+                if url and title and thumbnail_url:
                     videos.append({
                         'title': title, 
                         'url': url, 
