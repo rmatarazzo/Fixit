@@ -9,6 +9,9 @@ import json
 import os
 import logging
 import time
+from datetime import datetime
+import streamlit as st
+import pandas as pd
 
 def setup_logging():
     """Sets up logging configuration."""
@@ -167,3 +170,54 @@ def search_youtube(query, progress_bar, progress_text):
     finally:
         if driver:
             driver.quit()
+
+def main():
+    """Main function to run the Streamlit app."""
+    setup_logging()
+    
+    st.title("YouTube Video Scraper")
+    st.write("This app searches YouTube for a given query and scrapes related Video Titles, URLs, Descriptions, Thumbnails, and Durations.")
+    
+    query = st.text_input("Enter your YouTube search query:", "how to fix: ")
+    
+    if st.button("Start Search"):
+        progress_bar = st.progress(0)
+        progress_text = st.empty()
+        
+        progress_text.text("Starting search...")
+        videos = search_youtube(query, progress_bar, progress_text)
+        
+        if videos:
+            st.write(f"Total videos collected: {len(videos)}")
+            st.write("Video Titles, URLs, Descriptions, Thumbnails, and Durations found:")
+            # Convert videos list to a DataFrame for better display
+            df = pd.DataFrame(videos)
+            st.dataframe(df)  # Display dataframe with Streamlit
+
+            # Option to download the data as CSV
+            csv = df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Download video data as CSV",
+                data=csv,
+                file_name=f'video_data_{get_current_timestamp()}.csv',
+                mime='text/csv',
+            )
+
+            for idx, video in enumerate(videos, start=1):
+                st.write(f"{idx}. **Title:** {video['title']}")
+                st.write(f"   **URL:** {video['url']}")
+                st.write(f"   **Duration:** {video['duration']}")
+                st.write(f"   **Description:** {video['description']}")
+                
+                if video['thumbnail_url']:
+                    st.image(video['thumbnail_url'], caption=f"Thumbnail for {video['title']}")
+                else:
+                    st.write("   **Thumbnail:** Not available")
+        else:
+            st.write("No videos found.")
+        
+        progress_bar.progress(100)
+        progress_text.text("Completed!")
+
+if __name__ == "__main__":
+    main()

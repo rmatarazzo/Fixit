@@ -130,7 +130,7 @@ def search_youtube(query, progress_bar, progress_text):
                 try:
                     # First try the direct img element within the video element
                     thumbnail_element = WebDriverWait(driver, 20).until(
-                        EC.visibility_of_element_located((By.CSS_SELECTOR, 'img.yt-core-image'))
+                        EC.presence_of_element_located((By.CSS_SELECTOR, 'img.yt-core-image'))
                     )
                     thumbnail_url = thumbnail_element.get_attribute('src')
                 except Exception as e:
@@ -140,7 +140,7 @@ def search_youtube(query, progress_bar, progress_text):
                 if not thumbnail_url:
                     try:
                         thumbnail_element = WebDriverWait(driver, 20).until(
-                            EC.visibility_of_element_located((By.CSS_SELECTOR, 'ytd-thumbnail img'))
+                            EC.presence_of_element_located((By.CSS_SELECTOR, 'ytd-thumbnail img'))
                         )
                         thumbnail_url = thumbnail_element.get_attribute('src')
                     except Exception as e:
