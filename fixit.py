@@ -1,15 +1,17 @@
 import os
 import json
 import logging
+import time
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from datetime import datetime
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 import streamlit as st
 import pandas as pd
-import time
 
 def get_current_timestamp():
     """Returns the current timestamp in a string format suitable for filenames."""
@@ -70,7 +72,7 @@ def search_youtube(query, progress_bar, progress_text):
     
     driver = None
     try:
-        driver = webdriver.Chrome(options=chrome_options)
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
         
         base_url = "https://www.youtube.com"
         search_url = f"{base_url}/results?search_query={query.replace(' ', '+')}"
